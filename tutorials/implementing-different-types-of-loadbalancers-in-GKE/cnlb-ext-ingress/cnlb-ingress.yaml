@@ -1,0 +1,10 @@
+# internal-ingress.yaml
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: cnlb-ingress
+  namespace: cnlb
+spec:
+  backend:
+    serviceName: web
+    servicePort: 8080

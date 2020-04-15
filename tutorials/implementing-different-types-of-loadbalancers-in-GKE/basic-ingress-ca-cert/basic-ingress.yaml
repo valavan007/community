@@ -1,0 +1,12 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: ca-ingress
+  namespace: ca-ingress
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: example-ip-address
+    networking.gke.io/managed-certificates: ctest-ingress-ca
+spec:
+  backend:
+    serviceName: web
+    servicePort: 8080
