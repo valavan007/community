@@ -33,11 +33,11 @@ To perform the steps in the tutorials you will need a
     If not you can use the `gcloud auth login` command to authenticate.
     
 2.  In your shell, run the following commands to set the configuration context for `gcloud`:
-
+```
 	export PROJECT=$(gcloud info --format='value(config.project)')
 	export ZONE=us-central1-f
         gcloud config set compute/zone [ZONE_NAME]
-
+```
 ### Creating a Test GKE Cluster 
 
 * Open Cloudshell to create a GKE Cluster 
