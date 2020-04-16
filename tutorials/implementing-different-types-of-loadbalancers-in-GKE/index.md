@@ -309,3 +309,10 @@ To verify that you can reach the service, you need a VM deployed on the same VPC
 gcloud ssh temp-vm 
 $ curl <internal-ip>
 ```    
+### Delete the deployments 
+To delete all the deployments and services, you can use the following commands 
+```
+kubectl delete deployments --all-namespaces
+kubectl delete services --all-namespaces 
+kubectl detele ingress --all-namespaces
+gcloud beta container clusters delete hellow
