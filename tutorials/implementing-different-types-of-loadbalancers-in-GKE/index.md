@@ -1,14 +1,12 @@
 ---
 title: Implementing different types of load balancers in GKE
-description: Deploying different kinds of load balancers like HTTPS-Internal and External LB, TCP- Intenral and Extenal LB using GKE Ingress 
+description: Deploying different kinds of load balancers like HTTPS-Internal and External LB, TCP- Internal and External LB using GKE Ingress 
 author: valavan007
 tags: GKE Ingress, Load Balancers, Internal Load Balancers
 date_published: 2020-04-16
 ---
 
-This guide provides a walk through of deploying a simple implementation on GKE and using the differnet types of Load Balancers which cater to differentuse cases. 
-
-In GKE, Ingress controller is used to deploy Load Balancers on the GKE Platform. GKE ingress controllers currrently supports multiple load balancers like External HTTPS, Internal HTTPS, TCP/UDP External , TCP/UDP Internal and Container Native Load Balancer which are based on NEG. More details about the benefits of using Ccontainer Native Load Balancing and NEG can be found [here](https://cloud.google.com/kubernetes-engine/docs/concepts/container-native-load-balancing)
+This guide provides a walk through of deploying a simple helloworld application on GKE and using the differnet types of Load Balancers which cater to different use cases. GKE uses ingress controller  to deploy Load Balancers on the GKE Platform. GKE ingress controllers currrently supports multiple load balancers like External HTTPS, Internal HTTPS, TCP/UDP External , TCP/UDP Internal and Container Native Load Balancer which are based on Network Endpoint Groups(NEG). More details about the benefits of using Ccontainer Native Load Balancing and NEG can be found [here](https://cloud.google.com/kubernetes-engine/docs/concepts/container-native-load-balancing)
 
 This guide shows how to build a simple hello world application running in a single GKE cluster and exposing the service through the following load balancer option. Each type of load balancer will be implemented under a different namespace 
 
@@ -34,20 +32,20 @@ To perform the steps in the tutorials you will need a
     
 2.  In your shell, run the following commands to set the configuration context for `gcloud`:
 ```
-	export PROJECT=$(gcloud info --format='value(config.project)')
-	export ZONE=us-central1-f
-        gcloud config set compute/zone [ZONE_NAME]
+export PROJECT=$(gcloud info --format='value(config.project)')
+export ZONE=us-central1-f
+gcloud config set compute/zone [ZONE_NAME]
 ```
 ### Creating a Test GKE Cluster 
 
 * Open Cloudshell to create a GKE Cluster 
 ```
-	gcloud beta container clusters create hellow --release-channel=rapid --enable-ip-alias --network=default
+gcloud beta container clusters create hellow --release-channel=rapid --enable-ip-alias --network=default
 ```
 Note: Internal HTTPS LB is currently in Beta and is supported on Rapid Release GKE versions 
 
 ### Sample Application 
-The sample application that is shown here consists of a simple Deployment that deploys a HelloWorld page  and exposes the service on port 8080. This application is accessilbe only inside the cluster. 
+The sample application that is shown here consists of a simple Deployment that deploys a HelloWorld page  and exposes the service on port 8080. This application is not accessible outside the cluster. 
 
 ```
 apiVersion: apps/v1
@@ -160,11 +158,11 @@ curl <ext-ip-addr>
 
 ###  Deploy an internal HTTPS load balancer using GKE ingress & Container Native Load balancing
 Google Cloud recently announced the availability of Internal HTTPS Load balancer in beta. Prior to the announcement, internal TCP and 
-UDP load balancer served more as a transparent proxy forwarding packets received from the internal network. As a result, the incoming traffic will be proxied through the load balancer while the return traffic was sent to the network gateway instead of the load balancer proxy. This introduce additional complexity wherein additional changes were required to the underlying operating system if you are using a non-GCP OS image.
+UDP load balancer served more as a transparent proxy forwarding packets received from the internal network. As a result, the incoming traffic will be proxied through the load balancer while the return traffic was sent to the network gateway instead of the load balancer proxy. This introduced added complexity where in more changes were required to the underlying operating system if you are using a non-GCP OS image.
 
 Few important considerations before using Internal HTTPS Load Balancer 
-	- Creating a proxy-subnet
-	- Allowing health check from GCP keep-alive IP ranges
+- Creating a proxy-subnet
+- Allowing health check from GCP keep-alive IP ranges
 
 The additional steps of creating a proxy subnet which will be used by the HTTPS load balancer to pass it to the region VPC network
 ```
@@ -226,9 +224,9 @@ kubectl apply -f ilb-ingress.yaml
 ```
 Verify that the deployment is complete once the internal IP address is visible
 ``` 
-    kubectl get ingress ilb-ingress  (doesnt show the IP)
-	NAME          HOSTS   ADDRESS        PORTS   AGE
-    ilb-ingress   *       <internal-ip>   80      68s
+kubectl get ingress ilb-ingress  (doesnt show the IP)
+NAME          HOSTS   ADDRESS        PORTS   AGE
+lb-ingress   *       <internal-ip>   80      68s
 ```
 To verify that you can reach the service, you need a VM deployed on the same VPC to test 
 ```
@@ -238,7 +236,7 @@ $ curl <internal-ip>
 ```
 
 ### Deploy an external TCP Load balancer 
-Deploying a service through external TCP Load Balancer is quite straightforward with 
+Deploying a service through external TCP Load Balancer is quite straightforward with just naming the service type as `LoadBalancer`
 ```
 apiVersion: v1
 kind: Service
@@ -274,7 +272,7 @@ curl <LB-IP>:8080
 
 
 ### Deploy an internal TCP Load balancer 
-This section will focus on deploying the service through Internal LB. There is no ingress resource required, as GCP will provision load balancer based on the spec `type'. Only change that will be required is the annotations in the metadata which triggers GCP to deploy and internal TCP Load balancer 
+This section will focus on deploying the service through Internal LB. There is no ingress resource required, as GCP will provision load balancer based on the spec `type: LoadBalancer` and `annotations` in the Service definition. Only change that will be required is the annotations in the metadata which triggers GCP to deploy and internal TCP Load balancer 
 ```
 apiVersion: v1
 kind: Service
